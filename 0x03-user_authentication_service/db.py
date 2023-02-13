@@ -20,7 +20,7 @@ class DB:
         self._engine = create_engine("sqlite:///a.db", echo=False)
         Base.metadata.drop_all(self._engine)
         Base.metadata.create_all(self._engine)
-        self.__session = None
+        self.__session = DBSession()
 
     @property
     def _session(self) -> Session:
@@ -32,7 +32,7 @@ class DB:
         return self.__session
 
     def add_user(self, email: str, hashed_password: str) -> User:
-        """method saves a user to the database and returns a user object """
+        """ saves a user to the database and returns a user object """
         user = User(email=email, hashed_password=hashed_password)
         self._session.add(user)
         self._session.commit()
@@ -64,4 +64,3 @@ class DB:
                     self._session.commit()
             except NoResultFound:
                 pass
-
