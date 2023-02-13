@@ -1,28 +1,42 @@
 #!/usr/bin/env python3
-from os import abort
-from urllib import request
-from flask import Flask
-import flask
-import requests
-app = Flask(__name__)
-from sqlalchemy import create_engine
-
-
+"""API Routes for Authentication Service"""
 from auth import Auth
+from flask import (Flask,
+                   jsonify,
+                   request,
+                   abort,
+                   redirect)
 
-
+app = Flask(__name__)
 AUTH = Auth()
 
-@app.route("/")
-def home():
-    data = {"message": "Hello World!"}
-    return flask.jsonify(data)
 
-@app.route('/user')
-def user():
-    r = requests.post(AUTH.register_user("drew12@gmail.com", "12342"))
-    return flask.jsonify(r)
+@app.route('/', methods=['GET'])
+def hello_world() -> str:
+    """ Base route for authentication service API """
+    msg = {"message": "Bienvenue"}
+    return jsonify(msg)
 
+
+@app.route('/users', methods=['POST'])
+def register_user() -> str:
+    """Registers a new user if it does not exist before"""
+    try:
+        email = request.form['email']
+        password = request.form['password']
+    except KeyError:
+        abort(400)
+
+    try:
+        user = AUTH.register_user(email, password)
+    except ValueError:
+        return jsonify({"message": "email already registered"}), 400
+
+    msg = {"email": email, "message": "user created"}
+    return jsonify(msg)
+
+
+@app.route('/sessions', methods=['POST'])
 def log_in() -> str:
     """ Logs in a user and returns session ID """
     try:
@@ -37,7 +51,7 @@ def log_in() -> str:
     session_id = AUTH.create_session(email)
 
     msg = {"email": email, "message": "logged in"}
-    response = flask.jsonify(msg)
+    response = jsonify(msg)
 
     response.set_cookie("session_id", session_id)
 
@@ -62,7 +76,7 @@ def log_out() -> str:
 
     AUTH.destroy_session(user.id)
 
-    return flask.redirect('/')
+    return redirect('/')
 
 
 @app.route('/profile', methods=['GET'])
@@ -82,7 +96,7 @@ def profile() -> str:
 
     msg = {"email": user.email}
 
-    return Flask.jsonify(msg), 200
+    return jsonify(msg), 200
 
 
 @app.route('/reset_password', methods=['POST'])
@@ -103,7 +117,7 @@ def reset_password() -> str:
 
     msg = {"email": email, "reset_token": reset_token}
 
-    return flask.jsonify(msg), 200
+    return jsonify(msg), 200
 
 
 @app.route('/reset_password', methods=['PUT'])
@@ -128,8 +142,8 @@ def update_password() -> str:
         abort(403)
 
     msg = {"email": email, "message": "Password updated"}
-    return flask.jsonify(msg), 200
+    return jsonify(msg), 200
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port="5000")
+    app.run(host="localhost", port="5000")

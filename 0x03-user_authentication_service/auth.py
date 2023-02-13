@@ -2,25 +2,24 @@
 """ takes in a password string arguments and returns bytes.
     The returned bytes is a salted hash of the input password
 """
-from ctypes import Union
-import uuid
-from xml.dom import NotFoundErr
 import bcrypt
 from db import DB
-from user import User
-salt = bcrypt.gensalt()
 from sqlalchemy.orm.exc import NoResultFound
+from typing import Union
+from user import User
+from uuid import uuid4
 
 
 
-def _hash_password(password: str) -> bytes:
-    """Hashes a password"""
-    hashed = bcrypt.hashpw(password.encode("utf-8"), salt)
+def _hash_password(password: str) -> str:
+    """ Returns a salted hash of the input password """
+    hashed = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
     return hashed
 
-def _generate_uuid(self) -> str:
-    """Generates a uuid"""
-    return str(uuid.uuid4())
+def _generate_uuid() -> str:
+    """Returns a string representation of a new UUID"""
+    UUID = uuid4()
+    return str(UUID)
 
 
 class Auth:
@@ -126,4 +125,5 @@ class Auth:
         self._db.update_user(user.id,
                              hashed_password=hashed_password,
                              reset_token=None)
+    
     
