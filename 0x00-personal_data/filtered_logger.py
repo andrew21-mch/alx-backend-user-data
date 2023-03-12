@@ -67,6 +67,7 @@ def get_db() -> mysql.connector.connection.MySQLConnection:
 
 
 def main():
+    """Obfuscates a log message"""
     my_db = get_db()
     cursor = my_db.cursor()
     cursor.execute("SELECT * FROM users;")
